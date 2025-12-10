@@ -16,7 +16,6 @@ warnings.filterwarnings("ignore")
 ##Stock Predictor"""
 
 stock_data = pd.read_csv('all_stocks_5yr.csv', delimiter=',', on_bad_lines='skip')
-#stock_data = pd.read_csv('symbols_valid_meta.csv', delimiter=',', on_bad_lines='skip')
 print(stock_data.shape)
 print(stock_data.sample(7))
 
@@ -26,24 +25,6 @@ stock_data['date'] = pd.to_datetime(stock_data['date'])
 stock_data.info()
 
 companies = ['AAPL', 'AMD', 'FB', 'GOOGL', 'AMZN', 'NVDA', 'EBAY', 'CSCO', 'IBM']
-
-plt.figure(figsize=(15, 8))
-for index, company in enumerate(companies, 1):
-    plt.subplot(3, 3, index)
-    c = stock_data[stock_data['Name'] == company]
-    plt.plot(c['date'], c['close'], c="r", label="close", marker="+")
-    plt.plot(c['date'], c['open'], c="g", label="open", marker="^")
-    plt.title(company)
-    plt.legend()
-    plt.tight_layout()
-
-plt.figure(figsize=(15, 8))
-for index, company in enumerate(companies, 1):
-    plt.subplot(3, 3, index)
-    c = stock_data[stock_data['Name'] == company]
-    plt.plot(c['date'], c['volume'], c='purple', marker='*')
-    plt.title(f"{company} Volume")
-    plt.tight_layout()
 
 amazon = stock_data[stock_data['Name'] == 'AAPL']
 prediction_range = amazon.loc[(amazon['date'] > datetime(2013,1,1))
