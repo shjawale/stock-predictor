@@ -101,12 +101,10 @@ plt.ylabel("Close")
 plt.legend(['Train', 'Test', 'Predictions'])
 
 """
-# Tune hyperparameters for Amazon
-Tune the hyperparameters of the LSTM model to improve its performance.
+# Tune the hyperparameters of the LSTM model to improve its performance.
 
 ## Identify hyperparameters to tune
 
-### 
 Determine which hyperparameters of the LSTM model (e.g., number of units in LSTM layers, dropout rate, number of dense layers, learning rate) will be tuned.
 
 I want to review the existing LSTM model architecture and then identify which hyperparameters to tune based on common practices in tuning LSTM models for time series data.
@@ -135,12 +133,6 @@ I want to review the existing LSTM model architecture and then identify which hy
 # - Number of units in the hidden Dense layer
 # - Learning rate of the Adam optimizer
 
-print("Hyperparameters to be tuned:")
-print("- units in first LSTM layer\n")
-print("- units in second LSTM layer\n")
-print("- dropout rate\n")
-print("- units in hidden Dense layer\n")
-print("- Adam optimizer learning rate\n")
 
 """
 ## Choose a tuning method
@@ -233,7 +225,6 @@ tuner.search(x_train, y_train, epochs=10)
 
 """
 The first step is to load the data from the CSV file into a pandas DataFrame and display the first few rows and the columns and their data types to understand the structure of the data.
-
 
 """
 
@@ -381,14 +372,6 @@ print(f"Shape of y_train_general: {y_train_general.shape}")
 """
 ## Define and Pre-train a Base Model
 
-> Add blockquote
-
-
-
-### 
-Define a base LSTM model architecture. Train this model on the 'general' dataset prepared in the previous step to learn general stock market dynamics. This model will then serve as the pre-trained model for fine-tuning.
-
-
 Define the base LSTM model architecture for pre-training, compile it, and train it on the `x_train_general` and `y_train_general` datasets to learn general stock market dynamics.
 """
 
@@ -420,15 +403,18 @@ Fine-tune the pre-trained model using the prepared 'AMZN' specific stock data (x
 fine_tune_model = tf.keras.models.load_model('general_model_epoch5_batchsize256.keras')
 print("Pre-trained model loaded successfully.")
 
-"""Compile the loaded model with a lower learning rate, a common practice in transfer learning for fine-tuning.
-
+"""
+Compile the loaded model with a lower learning rate, a common practice in transfer learning for fine-tuning.
 
 """
 
 fine_tune_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='mean_squared_error')
 print("Fine-tune model compiled with Adam optimizer and a lower learning rate.")
 
-"""Prepare the Amazon-specific stock data (`x_fine_tune`, `y_fine_tune`) for fine-tuning. This includes scaling the `amazon` close prices and creating sequences using a sliding window."""
+"""
+Prepare the Amazon-specific stock data for fine-tuning. This includes scaling the `amazon` close prices and creating sequences using a sliding window.
+
+"""
 
 fine_tune_stock_data = stock_data[stock_data['Name'] == 'GOOGL']
 fine_tune_close_data = fine_tune_stock_data.filter(['close'])
@@ -455,8 +441,8 @@ x_fine_tune = np.reshape(x_fine_tune, (x_fine_tune.shape[0], x_fine_tune.shape[1
 print(f"Shape of x_fine_tune: {x_fine_tune.shape}")
 print(f"Shape of y_fine_tune: {y_fine_tune.shape}")
 
-"""Fine-tune the model using the `x_fine_tune` and `y_fine_tune` datasets.
-
+"""
+Fine-tune the model using the `x_fine_tune` and `y_fine_tune` datasets.
 
 """
 
@@ -464,8 +450,8 @@ print("Fine-tuning the model...")
 history_finetune = fine_tune_model.fit(x_fine_tune, y_fine_tune, epochs=50, batch_size=32)
 print("Fine-tuning complete.")
 
-"""Prepare the test data for evaluation, make predictions with the fine-tuned model, calculate the RMSE and MSE, and compare these metrics against the initial model's performance to assess the impact of transfer learning.
-
+"""
+Prepare the test data for evaluation, make predictions with the fine-tuned model, calculate the RMSE and MSE, and compare these metrics against the initial model's performance to assess the impact of transfer learning.
 
 """
 
@@ -496,8 +482,8 @@ print(f"Initial Model Test RMSE: {initial_rmse}")
 print(f"\nTuned Model Test Loss (MSE): {loss}") # loss from previous best_model evaluation
 print(f"Tuned Model Test RMSE: {rmse}") # rmse from previous best_model evaluation
 
-"""Plot the actual vs. predicted stock prices using the fine-tuned model. This step will create a plot similar to the initial model's visualization, showing the training data, the actual test data, and the predictions made by the fine-tuned model.
-
+"""
+Plot the actual vs. predicted stock prices using the fine-tuned model. This step will create a plot similar to the initial model's visualization, showing the training data, the actual test data, and the predictions made by the fine-tuned model.
 
 """
 
