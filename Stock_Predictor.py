@@ -110,28 +110,12 @@ Determine which hyperparameters of the LSTM model (e.g., number of units in LSTM
 I want to review the existing LSTM model architecture and then identify which hyperparameters to tune based on common practices in tuning LSTM models for time series data.
 """
 
-# The current model architecture is:
-# model = keras.models.Sequential()
-# model.add(keras.layers.LSTM(units=64, return_sequences=True, input_shape=(x_train.shape[1], 1)))
-# model.add(keras.layers.LSTM(units=64))
-# model.add(keras.layers.Dense(32))
-# model.add(keras.layers.Dropout(0.5))
-# model.add(keras.layers.Dense(1))
-# model.compile(optimizer='adam', loss='mean_squared_error')
-
 # Based on the architecture, the hyperparameters to tune are:
 # 1. units in LSTM layers (64)
 # 2. dropout rate (0.5)
 # 3. number of dense layers (2 including the output layer) - though typically the output layer is fixed
 # 4. units in the dense layer (32 in the hidden dense layer)
 # 5. optimizer learning rate (optimizer is 'adam', learning rate is its default, could change this in the future)
-
-# I want to tune the hyperparameters that seem to be the most useful:
-# - Number of units in the first LSTM layer
-# - Number of units in the second LSTM layer
-# - Dropout rate
-# - Number of units in the hidden Dense layer
-# - Learning rate of the Adam optimizer
 
 
 """
@@ -514,30 +498,34 @@ plt.show()
 
 Let's compare the performance metrics (MSE and RMSE) for the initial model, the hyperparameter-tuned model, and the fine-tuned model with transfer learning.
 
-*   **Initial Model (untuned):**
-    *   MSE: 51.18
-    *   RMSE: 7.15
+   Initial Model (untuned):
+       MSE: 51.18
+       RMSE: 7.15
 
-*   **Hyperparameter-Tuned Model (without transfer learning):**
-    *   MSE: 29274.66
-    *   RMSE: 1211.76
+   Hyperparameter-Tuned Model (without transfer learning):**
+       MSE: 29274.66
+       RMSE: 1211.76
 
-*   **Fine-tuned Model (with transfer learning):**
-    *   MSE: 599.99
-    *   RMSE: 24.49
+   Fine-tuned Model (with transfer learning):**
+       MSE: 599.99
+       RMSE: 24.49
 
-**Analysis:**
+Analysis:
 
-The **initial model** showed the best performance with the lowest MSE and RMSE.  Hyperparameter tuning and transfer learning are generally expected to improve model performance, so this is unusual.
+The initial model showed the best performance with the lowest MSE and RMSE.  Hyperparameter tuning and transfer learning are generally expected to improve model performance, so this is unusual.
 
-The **hyperparameter-tuned model** performed significantly worse than the initial model. This suggests that the hyperparameter search space or the number of trials was insufficient, or that the chosen objective, training loss, during tuning did not correlate well with generalization performance on the test set. It's also possible that the nunmber of executions per trial, 2, might not be enough to get a stable estimate of performance for each hyperparameter combination. Additionally, the hyperparameters found might have led to overfitting to the training data. The large increase in MSE and RMSE indicates a significant degradation in predictive accuracy.
+The hyperparameter-tuned model performed significantly worse than the initial model. This suggests that the hyperparameter search space or the number of trials was insufficient, or that the chosen objective, training loss, during tuning did not correlate well with generalization performance on the test set. It's also possible that the nunmber of executions per trial, 2, might not be enough to get a stable estimate of performance for each hyperparameter combination. Additionally, the hyperparameters found might have led to overfitting to the training data. The large increase in MSE and RMSE indicates a significant degradation in predictive accuracy.
 
-The **fine-tuned model** using transfer learning also performed significantly worse than the initial model but considerably better than the hyperparameter-tuned model. While transfer learning generally helps, in this specific instance, the pre-trained model might not have captured market dynamics relevant to the 'AMZN' stock in a way that benefits fine-tuning. The pre-training dataset might have been too diverse, or the 'AMZN' stock's behavior is too distinct from the general market trends learned by the pre-trained model. It's also possible that the additional 10 epochs for fine-tuning were not enough, or that a different fine-tuning strategy (e.g., freezing some layers) would be more beneficial.
+The fine-tuned model using transfer learning also performed significantly worse than the initial model but considerably better than the hyperparameter-tuned model. While transfer learning generally helps, in this specific instance, the pre-trained model might not have captured market dynamics relevant to the 'AMZN' stock in a way that benefits fine-tuning. The pre-training dataset might have been too diverse, or the 'AMZN' stock's behavior is too distinct from the general market trends learned by the pre-trained model. It's also possible that the additional 10 epochs for fine-tuning were not enough, or that a different fine-tuning strategy (e.g., freezing some layers) would be more beneficial.
 
-**Conclusion:**
+Conclusion:
 
-Based on these results, the **initial model** performed best for predicting Amazon stock prices. This outcome highlights that advanced techniques like hyperparameter tuning and transfer learning are not guaranteed to improve performance and heavily depend on proper implementation, data characteristics, and problem domain. Further investigation into the hyperparameter tuning process (e.g., wider search space, more epochs per trial, different objective function) and the transfer learning setup (e.g., different pre-training data, different fine-tuning approach) would be necessary to potentially surpass the initial model's performance.
+Based on these results, the initial model performed best for predicting Amazon stock prices. This outcome highlights that advanced techniques like hyperparameter tuning and transfer learning are not guaranteed to improve performance and heavily depend on proper implementation, data characteristics, and problem domain. Further investigation into the hyperparameter tuning process (e.g., wider search space, more epochs per trial, different objective function) and the transfer learning setup (e.g., different pre-training data, different fine-tuning approach) would be necessary to potentially surpass the initial model's performance.
+"""
 
+
+
+"""
 # Neflix stock data
 """
 
@@ -548,10 +536,6 @@ netflix_stock_data.head()
 
 """
 ### Prepare Netflix Data
-
-#### 
-Convert the 'Date' column to datetime objects and extract the 'Close' prices from the `netflix_stock_data` DataFrame. Split the data into training and testing sets based on a 95/5 split.
-
 
 Convert the 'Date' column to datetime objects, extract the 'Close' prices, and then split the data into training and testing sets based on a 95/5 ratio.
 """
@@ -588,11 +572,8 @@ print(f"Shape of scaled_test_data_netflix: {scaled_test_data_netflix.shape}")
 """
 ## Create Netflix Training/Testing Sequences
 
-### 
 Generate sequential `x_train_netflix`, `y_train_netflix`, `x_test_netflix`, and `y_test_netflix` datasets using a 60-day sliding window approach, reshaping them for LSTM input.
 
-
-To create the sequential training and testing datasets for the LSTM model, I will apply a 60-day sliding window approach to the scaled Netflix data, storing the input sequences and their corresponding target values in `x_train_netflix`, `y_train_netflix`, `x_test_netflix`, and `y_test_netflix` respectively, and then reshape them appropriately for the LSTM model.
 """
 
 x_train_netflix = []
