@@ -1,4 +1,3 @@
-# stock-predictor
 # Stock Predictor Project
 This project implements and optimizes a Long Short-Term Memory (LSTM) neural network for time-series stock price prediction. It covers the end-to-end machine learning workflow, from data preprocessing to advanced techniques like Transfer Learning.
 
