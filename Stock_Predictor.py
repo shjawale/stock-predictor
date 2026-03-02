@@ -16,7 +16,6 @@ warnings.filterwarnings("ignore")
 ##Stock Predictor"""
 
 stock_data = pd.read_csv('all_stocks_5yr.csv', delimiter=',', on_bad_lines='skip')
-#stock_data = pd.read_csv('symbols_valid_meta.csv', delimiter=',', on_bad_lines='skip')
 print(stock_data.shape)
 print(stock_data.sample(7))
 
@@ -26,24 +25,6 @@ stock_data['date'] = pd.to_datetime(stock_data['date'])
 stock_data.info()
 
 companies = ['AAPL', 'AMD', 'FB', 'GOOGL', 'AMZN', 'NVDA', 'EBAY', 'CSCO', 'IBM']
-
-plt.figure(figsize=(15, 8))
-for index, company in enumerate(companies, 1):
-    plt.subplot(3, 3, index)
-    c = stock_data[stock_data['Name'] == company]
-    plt.plot(c['date'], c['close'], c="r", label="close", marker="+")
-    plt.plot(c['date'], c['open'], c="g", label="open", marker="^")
-    plt.title(company)
-    plt.legend()
-    plt.tight_layout()
-
-plt.figure(figsize=(15, 8))
-for index, company in enumerate(companies, 1):
-    plt.subplot(3, 3, index)
-    c = stock_data[stock_data['Name'] == company]
-    plt.plot(c['date'], c['volume'], c='purple', marker='*')
-    plt.title(f"{company} Volume")
-    plt.tight_layout()
 
 amazon = stock_data[stock_data['Name'] == 'AAPL']
 prediction_range = amazon.loc[(amazon['date'] > datetime(2013,1,1))
@@ -120,25 +101,14 @@ plt.ylabel("Close")
 plt.legend(['Train', 'Test', 'Predictions'])
 
 """
-# Tune hyperparameters for Amazon
-Tune the hyperparameters of the LSTM model to improve its performance.
+# Tune the hyperparameters of the LSTM model to improve its performance.
 
 ## Identify hyperparameters to tune
 
-### 
 Determine which hyperparameters of the LSTM model (e.g., number of units in LSTM layers, dropout rate, number of dense layers, learning rate) will be tuned.
 
 I want to review the existing LSTM model architecture and then identify which hyperparameters to tune based on common practices in tuning LSTM models for time series data.
 """
-
-# The current model architecture is:
-# model = keras.models.Sequential()
-# model.add(keras.layers.LSTM(units=64, return_sequences=True, input_shape=(x_train.shape[1], 1)))
-# model.add(keras.layers.LSTM(units=64))
-# model.add(keras.layers.Dense(32))
-# model.add(keras.layers.Dropout(0.5))
-# model.add(keras.layers.Dense(1))
-# model.compile(optimizer='adam', loss='mean_squared_error')
 
 # Based on the architecture, the hyperparameters to tune are:
 # 1. units in LSTM layers (64)
@@ -147,19 +117,6 @@ I want to review the existing LSTM model architecture and then identify which hy
 # 4. units in the dense layer (32 in the hidden dense layer)
 # 5. optimizer learning rate (optimizer is 'adam', learning rate is its default, could change this in the future)
 
-# I want to tune the hyperparameters that seem to be the most useful:
-# - Number of units in the first LSTM layer
-# - Number of units in the second LSTM layer
-# - Dropout rate
-# - Number of units in the hidden Dense layer
-# - Learning rate of the Adam optimizer
-
-print("Hyperparameters to be tuned:")
-print("- units in first LSTM layer\n")
-print("- units in second LSTM layer\n")
-print("- dropout rate\n")
-print("- units in hidden Dense layer\n")
-print("- Adam optimizer learning rate\n")
 
 """
 ## Choose a tuning method
@@ -252,7 +209,6 @@ tuner.search(x_train, y_train, epochs=10)
 
 """
 The first step is to load the data from the CSV file into a pandas DataFrame and display the first few rows and the columns and their data types to understand the structure of the data.
-
 
 """
 
@@ -400,14 +356,6 @@ print(f"Shape of y_train_general: {y_train_general.shape}")
 """
 ## Define and Pre-train a Base Model
 
-> Add blockquote
-
-
-
-### 
-Define a base LSTM model architecture. Train this model on the 'general' dataset prepared in the previous step to learn general stock market dynamics. This model will then serve as the pre-trained model for fine-tuning.
-
-
 Define the base LSTM model architecture for pre-training, compile it, and train it on the `x_train_general` and `y_train_general` datasets to learn general stock market dynamics.
 """
 
@@ -439,15 +387,18 @@ Fine-tune the pre-trained model using the prepared 'AMZN' specific stock data (x
 fine_tune_model = tf.keras.models.load_model('general_model_epoch5_batchsize256.keras')
 print("Pre-trained model loaded successfully.")
 
-"""Compile the loaded model with a lower learning rate, a common practice in transfer learning for fine-tuning.
-
+"""
+Compile the loaded model with a lower learning rate, a common practice in transfer learning for fine-tuning.
 
 """
 
 fine_tune_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='mean_squared_error')
 print("Fine-tune model compiled with Adam optimizer and a lower learning rate.")
 
-"""Prepare the Amazon-specific stock data (`x_fine_tune`, `y_fine_tune`) for fine-tuning. This includes scaling the `amazon` close prices and creating sequences using a sliding window."""
+"""
+Prepare the Amazon-specific stock data for fine-tuning. This includes scaling the `amazon` close prices and creating sequences using a sliding window.
+
+"""
 
 fine_tune_stock_data = stock_data[stock_data['Name'] == 'GOOGL']
 fine_tune_close_data = fine_tune_stock_data.filter(['close'])
@@ -474,8 +425,8 @@ x_fine_tune = np.reshape(x_fine_tune, (x_fine_tune.shape[0], x_fine_tune.shape[1
 print(f"Shape of x_fine_tune: {x_fine_tune.shape}")
 print(f"Shape of y_fine_tune: {y_fine_tune.shape}")
 
-"""Fine-tune the model using the `x_fine_tune` and `y_fine_tune` datasets.
-
+"""
+Fine-tune the model using the `x_fine_tune` and `y_fine_tune` datasets.
 
 """
 
@@ -483,8 +434,8 @@ print("Fine-tuning the model...")
 history_finetune = fine_tune_model.fit(x_fine_tune, y_fine_tune, epochs=50, batch_size=32)
 print("Fine-tuning complete.")
 
-"""Prepare the test data for evaluation, make predictions with the fine-tuned model, calculate the RMSE and MSE, and compare these metrics against the initial model's performance to assess the impact of transfer learning.
-
+"""
+Prepare the test data for evaluation, make predictions with the fine-tuned model, calculate the RMSE and MSE, and compare these metrics against the initial model's performance to assess the impact of transfer learning.
 
 """
 
@@ -515,8 +466,8 @@ print(f"Initial Model Test RMSE: {initial_rmse}")
 print(f"\nTuned Model Test Loss (MSE): {loss}") # loss from previous best_model evaluation
 print(f"Tuned Model Test RMSE: {rmse}") # rmse from previous best_model evaluation
 
-"""Plot the actual vs. predicted stock prices using the fine-tuned model. This step will create a plot similar to the initial model's visualization, showing the training data, the actual test data, and the predictions made by the fine-tuned model.
-
+"""
+Plot the actual vs. predicted stock prices using the fine-tuned model. This step will create a plot similar to the initial model's visualization, showing the training data, the actual test data, and the predictions made by the fine-tuned model.
 
 """
 
@@ -547,30 +498,34 @@ plt.show()
 
 Let's compare the performance metrics (MSE and RMSE) for the initial model, the hyperparameter-tuned model, and the fine-tuned model with transfer learning.
 
-*   **Initial Model (untuned):**
-    *   MSE: 51.18
-    *   RMSE: 7.15
+   Initial Model (untuned):
+       MSE: 51.18
+       RMSE: 7.15
 
-*   **Hyperparameter-Tuned Model (without transfer learning):**
-    *   MSE: 29274.66
-    *   RMSE: 1211.76
+   Hyperparameter-Tuned Model (without transfer learning):**
+       MSE: 29274.66
+       RMSE: 1211.76
 
-*   **Fine-tuned Model (with transfer learning):**
-    *   MSE: 599.99
-    *   RMSE: 24.49
+   Fine-tuned Model (with transfer learning):**
+       MSE: 599.99
+       RMSE: 24.49
 
-**Analysis:**
+Analysis:
 
-The **initial model** showed the best performance with the lowest MSE and RMSE.  Hyperparameter tuning and transfer learning are generally expected to improve model performance, so this is unusual.
+The initial model showed the best performance with the lowest MSE and RMSE.  Hyperparameter tuning and transfer learning are generally expected to improve model performance, so this is unusual.
 
-The **hyperparameter-tuned model** performed significantly worse than the initial model. This suggests that the hyperparameter search space or the number of trials was insufficient, or that the chosen objective, training loss, during tuning did not correlate well with generalization performance on the test set. It's also possible that the nunmber of executions per trial, 2, might not be enough to get a stable estimate of performance for each hyperparameter combination. Additionally, the hyperparameters found might have led to overfitting to the training data. The large increase in MSE and RMSE indicates a significant degradation in predictive accuracy.
+The hyperparameter-tuned model performed significantly worse than the initial model. This suggests that the hyperparameter search space or the number of trials was insufficient, or that the chosen objective, training loss, during tuning did not correlate well with generalization performance on the test set. It's also possible that the nunmber of executions per trial, 2, might not be enough to get a stable estimate of performance for each hyperparameter combination. Additionally, the hyperparameters found might have led to overfitting to the training data. The large increase in MSE and RMSE indicates a significant degradation in predictive accuracy.
 
-The **fine-tuned model** using transfer learning also performed significantly worse than the initial model but considerably better than the hyperparameter-tuned model. While transfer learning generally helps, in this specific instance, the pre-trained model might not have captured market dynamics relevant to the 'AMZN' stock in a way that benefits fine-tuning. The pre-training dataset might have been too diverse, or the 'AMZN' stock's behavior is too distinct from the general market trends learned by the pre-trained model. It's also possible that the additional 10 epochs for fine-tuning were not enough, or that a different fine-tuning strategy (e.g., freezing some layers) would be more beneficial.
+The fine-tuned model using transfer learning also performed significantly worse than the initial model but considerably better than the hyperparameter-tuned model. While transfer learning generally helps, in this specific instance, the pre-trained model might not have captured market dynamics relevant to the 'AMZN' stock in a way that benefits fine-tuning. The pre-training dataset might have been too diverse, or the 'AMZN' stock's behavior is too distinct from the general market trends learned by the pre-trained model. It's also possible that the additional 10 epochs for fine-tuning were not enough, or that a different fine-tuning strategy (e.g., freezing some layers) would be more beneficial.
 
-**Conclusion:**
+Conclusion:
 
-Based on these results, the **initial model** performed best for predicting Amazon stock prices. This outcome highlights that advanced techniques like hyperparameter tuning and transfer learning are not guaranteed to improve performance and heavily depend on proper implementation, data characteristics, and problem domain. Further investigation into the hyperparameter tuning process (e.g., wider search space, more epochs per trial, different objective function) and the transfer learning setup (e.g., different pre-training data, different fine-tuning approach) would be necessary to potentially surpass the initial model's performance.
+Based on these results, the initial model performed best for predicting Amazon stock prices. This outcome highlights that advanced techniques like hyperparameter tuning and transfer learning are not guaranteed to improve performance and heavily depend on proper implementation, data characteristics, and problem domain. Further investigation into the hyperparameter tuning process (e.g., wider search space, more epochs per trial, different objective function) and the transfer learning setup (e.g., different pre-training data, different fine-tuning approach) would be necessary to potentially surpass the initial model's performance.
+"""
 
+
+
+"""
 # Neflix stock data
 """
 
@@ -581,10 +536,6 @@ netflix_stock_data.head()
 
 """
 ### Prepare Netflix Data
-
-#### 
-Convert the 'Date' column to datetime objects and extract the 'Close' prices from the `netflix_stock_data` DataFrame. Split the data into training and testing sets based on a 95/5 split.
-
 
 Convert the 'Date' column to datetime objects, extract the 'Close' prices, and then split the data into training and testing sets based on a 95/5 ratio.
 """
@@ -621,11 +572,8 @@ print(f"Shape of scaled_test_data_netflix: {scaled_test_data_netflix.shape}")
 """
 ## Create Netflix Training/Testing Sequences
 
-### 
 Generate sequential `x_train_netflix`, `y_train_netflix`, `x_test_netflix`, and `y_test_netflix` datasets using a 60-day sliding window approach, reshaping them for LSTM input.
 
-
-To create the sequential training and testing datasets for the LSTM model, I will apply a 60-day sliding window approach to the scaled Netflix data, storing the input sequences and their corresponding target values in `x_train_netflix`, `y_train_netflix`, `x_test_netflix`, and `y_test_netflix` respectively, and then reshape them appropriately for the LSTM model.
 """
 
 x_train_netflix = []
