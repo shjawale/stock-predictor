@@ -1,0 +1,6 @@
+# Data files
+all_stocks_5yr.csv
+*.csv
+
+# Python/Environment
+__pycache__/
